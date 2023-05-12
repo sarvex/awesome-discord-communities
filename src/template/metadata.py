@@ -21,11 +21,14 @@ class DiscordCommunityMetadata:
     def parse_data(self):
         data = self.request().json()
         try:
-            status = data["code"] == self.invite_code or data["code"] == self.invite_code.lower()
+            status = data["code"] in [self.invite_code, self.invite_code.lower()]
             if status:
-                data_captured = {"invite_code": data["code"], "name": data["guild"]["name"],
-                                 "unique": data["guild"]["id"], "icon_id": data["guild"]["icon"]}
-                return data_captured
+                return {
+                    "invite_code": data["code"],
+                    "name": data["guild"]["name"],
+                    "unique": data["guild"]["id"],
+                    "icon_id": data["guild"]["icon"],
+                }
             return None
 
         except KeyError:

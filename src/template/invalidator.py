@@ -19,8 +19,7 @@ class CheckInvalid:
         invite_codes = {}
         with open(self.load, encoding="utf-8", mode="r") as readme:
             for _ in readme:
-                codes = invite_pattern.findall(_)
-                if codes:
+                if codes := invite_pattern.findall(_):
                     for c in codes:
                         invite_codes[c[4]] = c[0]
 

@@ -11,7 +11,7 @@ class Channels:
         self.channels = channels
 
     def length(self):
-        return sum([len(_) for _ in self.channels]) + 2 * (len(self.channels) - 1)
+        return sum(len(_) for _ in self.channels) + 2 * (len(self.channels) - 1)
 
     def truncate(self, highest_char_limit=HIGHEST_CHAR_LIMIT):
         while self.length() > highest_char_limit:
@@ -48,17 +48,16 @@ class GenerateTemplate:
         # From subreddit name rule: https://redd.it/592kmw
         m = re.search(r'reddit.com/r/[a-zA-Z0-9_]+/?', self.homepage) if self.homepage else None
         if m:
-            return f' [<img height="16px" width="16px" alt="Reddit Badge" src="images/badges/reddit.webp">]' \
-                   f'(badges.md#reddit-badge)'
+            return ' [<img height="16px" width="16px" alt="Reddit Badge" src="images/badges/reddit.webp">](badges.md#reddit-badge)'
         return f''
 
     def format_official(self):
         if self.official:
-            if (self.official and not self.homepage) and (self.official and not self.git):
+            if self.homepage or self.git:
+                return ' [<img height="16px" width="16px" alt="Official Badge" src="images/badges/official.webp">](badges.md#official-identification-badge)'
+            else:
                 raise ValueError(
                     'An official community must have a homepage or Git repository that claims its ownership')
-            return f' [<img height="16px" width="16px" alt="Official Badge" src="images/badges/official.webp">]' \
-                   f'(badges.md#official-identification-badge)'
         return f''
 
     def format_homepage(self):
@@ -73,7 +72,7 @@ class GenerateTemplate:
         return f''
 
     def format_channels(self):
-        channels = ['#' + _ for _ in self.channels]
+        channels = [f'#{_}' for _ in self.channels]
         c = Channels(channels)
         initial_length = c.length()
         if initial_length >= c.EXT_CHAR_LIMIT:
@@ -84,8 +83,11 @@ class GenerateTemplate:
         return ', '.join([f'`{_}`' for _ in channels])
 
     def format_language(self):
-        languages = ', '.join(self.language) if isinstance(self.language, list) else self.language
-        return languages
+        return (
+            ', '.join(self.language)
+            if isinstance(self.language, list)
+            else self.language
+        )
 
     def padding(self):
         channel_limit = len(self.format_channels()) - self.format_channels().count('`') <= Channels.LOWEST_CHAR_LIMIT
